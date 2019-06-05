@@ -25,6 +25,9 @@ import six
 import tensorflow as tf
 
 
+einsum = tf.function(tf.einsum, autograph=False)
+
+
 class BertConfig(object):
   """Configuration for `BertModel`."""
 
@@ -430,7 +433,7 @@ class Attention(tf.keras.layers.Layer):
 
     # Take the dot product between "query" and "key" to get the raw
     # attention scores.
-    attention_scores = tf.einsum("BFNH,BTNH->BNFT", query_tensor, key_tensor)
+    attention_scores = einsum("BFNH,BTNH->BNFT", query_tensor, key_tensor)
     attention_scores = tf.multiply(attention_scores,
                                    1.0 / math.sqrt(float(self.size_per_head)))
 
@@ -456,7 +459,7 @@ class Attention(tf.keras.layers.Layer):
     attention_probs = self.attention_probs_dropout(attention_probs)
 
     # `context_layer` = [B, F, N, H]
-    context_tensor = tf.einsum("BNFT,BTNH->BFNH", attention_probs, value_tensor)
+    context_tensor = einsum("BNFT,BTNH->BFNH", attention_probs, value_tensor)
 
     return context_tensor
 
@@ -571,9 +574,9 @@ class Dense3D(tf.keras.layers.Layer):
       bias = self.bias
 
     if self.output_projection:
-      ret = tf.einsum("abcd,cde->abe", inputs, kernel)
+      ret = einsum("abcd,cde->abe", inputs, kernel)
     else:
-      ret = tf.einsum("abc,cde->abde", inputs, kernel)
+      ret = einsum("abc,cde->abde", inputs, kernel)
     ret += bias
     if self.activation is not None:
       return self.activation(ret)
@@ -631,7 +634,7 @@ class Dense2DProjection(tf.keras.layers.Layer):
     Returns:
       A 3D Tensor.
     """
-    ret = tf.einsum("abc,cd->abd", inputs, self.kernel)
+    ret = einsum("abc,cd->abd", inputs, self.kernel)
     ret += self.bias
     if self.activation is not None:
       return self.activation(ret)
@@ -851,6 +854,7 @@ def is_special_none_tensor(tensor):
   return tensor.shape.ndims == 0 and tensor.dtype == tf.int32
 
 
+@tf.function
 def gelu(x):
   """Gaussian Error Linear Unit.
 
