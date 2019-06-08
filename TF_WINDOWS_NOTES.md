@@ -81,3 +81,22 @@ jupyter notebook object_detection_tutorial.ipynb
 - [Edureka TensorFlow Tutorial for Beginners](https://www.youtube.com/playlist?list=PL9ooVrP1hQOFJ8UZl86fYfmB1_P5yGzBT)
 - [Object Detection Zoos](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md)
 - [TensorFlow Object Detection Docs](https://github.com/tensorflow/models/tree/master/research/object_detection#tensorflow-object-detection-api)
+
+## Testing Images
+
+- Added rename PowerShell script "renamePics.ps1" for renaming all copied images in the test_images folder to image#.jpg.
+- Increment the TEST_IMAGE_PATH range to match renamed images.
+  - *Note: it would also be easy to just use the files as is and update the TEST_IMAGE_PATHS to select the correct image files.*
+
+## Jupyter
+
+- Run Cell ```Shift + Enter```.
+- Clear Output - Change to ray and back to code ```Esc R Y```.
+
+## TODOs
+
+- Add tensor flow image processing counter and estimate time to object_detection_tutorial.ipynb.
+- For my usecase only show images that have object detected.
+  - RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface
+- Make outputarea.less bigger. class='output output_scroll' like 100 em.
+- Get index of items over 50% match.  Then map to the Category index name and output to console
