@@ -18,6 +18,6 @@ $count = $startingImageCount
 $allNewJpgFiles = Get-ChildItem -Path .\*.jpg -Exclude image*.jpg -Recurse -Force
 $allNewJpgFiles | ForEach-Object -begin { $count } -process {
     Write-Verbose "Renaming $_ to image$count.jpg" -Verbose
-    Rename-Item $_ -NewName "image$count.jpg"
+    Rename-Item -LiteralPath $_ -NewName "image$count.jpg" -Force
     $count++
 }

@@ -96,8 +96,11 @@ jupyter notebook object_detection_tutorial.ipynb
 ## TODOs
 
 - ~~Add tensor flow image processing counter and estimate time to scotthew_detection_tutorial.ipynb.~~
-- For my usecase only show images that have object detected.
-  - RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface
-  - Write mumpy image array to output file. [pypng](https://github.com/drj11/pypng/)
-- Make outputarea.less bigger. class='output output_scroll' like 100 em.
+- ~~For my usecase only show images that have object detected.~~
+  - ~~RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface~~
+    - Converted to save output file.  pyplot is not needed anymore.
+  - ~~Write NumPy image array to output file.~~
+    - [PIL](https://pillow.readthedocs.io/en/4.2.x/reference/Image.html#PIL.Image.fromarray)
+- ~~Make outputarea.less bigger. class='output output_scroll' like 100 em.~~
 - ~~Get index of items over 50% match.  Then map to the Category index name and output to console~~
+- Convert jupyter notebook to python script.
