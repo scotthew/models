@@ -104,3 +104,8 @@ jupyter notebook object_detection_tutorial.ipynb
 - ~~Make outputarea.less bigger. class='output output_scroll' like 100 em.~~
 - ~~Get index of items over 50% match.  Then map to the Category index name and output to console~~
 - Convert jupyter notebook to python script.
+- Exclude Tags:
+  - Car, Truck, Bench, Train, TV, potted plant, stop sign, sports ball, chair, traffic light, bus, stop sign, parking meter, giraffe, bird, fire hydrant, surfboard
+- Include Tags:
+  - person, bicycle, handbag, book, umbrella, backpack, skateboard, bear
+- Filter by box size to remove distant objects
