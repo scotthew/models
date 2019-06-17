@@ -5,6 +5,20 @@
 - [TensorFlow GPU install instructions](https://tensorflow-object-detection-api-tutorial.readthedocs.io/en/latest/install.html)
 - Install tensorflow on conda virtual environment
 
+### Updating
+
+#### Tensorflow
+
+```bash
+(tensorflow_gpu) C:\tensorflow1\models\research\object_detection> pip install --ignore-installed --upgrade tensorflow==1.14.0rc1
+```
+
+#### All Conda
+
+```bash
+(tensorflow_gpu) C:\tensorflow1\models\research\object_detection> conda update --all
+```
+
 ## Starting Conda Virtual Environment
 
 Launch Anaconda command line.  Anaconda PowerShell doesn't appear to work.
@@ -75,6 +89,12 @@ jupyter notebook object_detection_tutorial.ipynb
   - ~~Disable AdBlock~~
   - ~~Disable Antivirus~~
 
+## Running Scotthew
+
+```bash
+(tensorflow_gpu) C:\tensorflow1\models\research\object_detection> python scotthew_object_detection.py
+```
+
 ## Links
 
 - [Edureka Realtime Object Detection Youtube](https://www.youtube.com/watch?v=wh7_etX91ls&t=1230s)
@@ -93,19 +113,45 @@ jupyter notebook object_detection_tutorial.ipynb
 - Run Cell ```Shift + Enter```.
 - Clear Output - Change to ray and back to code ```Esc R Y```.
 
+## RTX Win 10
+
+Official Instructions [Official Win10 Compile](https://www.tensorflow.org/install/source_windows)
+
+- Follow GPU Steps
+
+Follow Instruction to [Compile tensorflow for RTX](https://www.pytorials.com/how-to-install-tensorflow-gpu-with-cuda-10-0-for-python-on-windows/)
+
+- Step 8 Get newer baszel version
+
+  ```bash
+  wget https://github.com/bazelbuild/bazel/releases/download/0.25.2/bazel-0.25.2-windows-x86_64.exe -O bazel.exe
+  ```
+
+- Step 9 [Install GPEdit](https://www.ghacks.net/2019/01/07/how-to-enable-gpedit-msc-group-policy-on-windows-10-home-devices/)
+- Step 11 - Had to rename dlls to get this to build.  Not sure if I gave it the wrong cuda versions.
+  - Checkout tensorflow r1.14 ```git checkout r1.14```
+  - Set Python path to default.  tensorflow_gpu env did not work for me.
+  - Cuda version 101
+  - cudnn version 7
+  - Compute Capability 7.5
+- Error No module named 'keras_preprocessing'
+  - pip install h5py==2.8.0
+  - pip3 install keras_applications==1.0.6 --no-deps
+  - pip3 install keras_preprocessing==1.0.5 --no-deps
+
 ## TODOs
 
 - ~~Add tensor flow image processing counter and estimate time to scotthew_detection_tutorial.ipynb.~~
 - ~~For my usecase only show images that have object detected.~~
-  - ~~RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface~~
+  - ~~RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface.~~
     - Converted to save output file.  pyplot is not needed anymore.
   - ~~Write NumPy image array to output file.~~
     - [PIL](https://pillow.readthedocs.io/en/4.2.x/reference/Image.html#PIL.Image.fromarray)
 - ~~Make outputarea.less bigger. class='output output_scroll' like 100 em.~~
-- ~~Get index of items over 50% match.  Then map to the Category index name and output to console~~
-- Convert jupyter notebook to python script.
-- Exclude Tags:
+- ~~Get index of items over 50% match.  Then map to the Category index name and output to console.~~
+- ~~Convert jupyter notebook to python script.~~
+- ~~Exclude Tags:~~
   - Car, Truck, Bench, Train, TV, potted plant, stop sign, sports ball, chair, traffic light, bus, stop sign, parking meter, giraffe, bird, fire hydrant, surfboard
-- Include Tags:
+- ~~Include Tags:~~
   - person, bicycle, handbag, book, umbrella, backpack, skateboard, bear
-- Filter by box size to remove distant objects
+- Filter by box size to remove distant objects.
