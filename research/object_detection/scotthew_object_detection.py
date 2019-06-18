@@ -5,7 +5,7 @@ from object_detection.utils import ops as utils_ops
 import numpy as np
 import os
 import six.moves.urllib as urllib
-import sys
+import sys, traceback
 import tarfile
 import tensorflow as tf
 import zipfile
@@ -113,7 +113,7 @@ def load_image_into_numpy_array(image):
 #PATH_TO_TEST_IMAGES_DIR = ntpath.join('test_images','FrontCam', 'Missed')
 PATH_TO_TEST_IMAGES_DIR = ntpath.join('test_images', 'FrontCam')
 TEST_IMAGE_PATHS = [os.path.join(
-    PATH_TO_TEST_IMAGES_DIR, 'image{}.jpg'.format(i)) for i in range(1, 23969)]
+    PATH_TO_TEST_IMAGES_DIR, 'image{}.jpg'.format(i)) for i in range(18523, 23969)]
 #PATH_TO_TEST_IMAGES_OUT_DIR = ntpath.join('test_images_out', 'FrontCam', 'Missed')
 PATH_TO_TEST_IMAGES_OUT_DIR = ntpath.join('test_images_out', 'FrontCam')
 
@@ -148,9 +148,9 @@ def run_inference_for_single_image(image, graph, sess):
         real_num_detection = tf.cast(
             tensor_dict['num_detections'][0], tf.int32)
         detection_boxes = tf.slice(detection_boxes, [0, 0], [
-                                    real_num_detection, -1])
+            real_num_detection, -1])
         detection_masks = tf.slice(detection_masks, [0, 0, 0], [
-                                    real_num_detection, -1, -1])
+            real_num_detection, -1, -1])
         detection_masks_reframed = utils_ops.reframe_box_masks_to_image_masks(
             detection_masks, detection_boxes, image.shape[1], image.shape[2])
         detection_masks_reframed = tf.cast(
@@ -162,7 +162,7 @@ def run_inference_for_single_image(image, graph, sess):
 
     # Run inference
     output_dict = sess.run(tensor_dict,
-                            feed_dict={image_tensor: image})
+                           feed_dict={image_tensor: image})
 
     # all outputs are float32 numpy arrays, so convert types as appropriate
     output_dict['num_detections'] = int(
@@ -222,87 +222,93 @@ start_time = time.time()
 #print("Start Time: %s" % (start_time))
 
 with detection_graph.as_default() as graph:
-  with tf.compat.v1.Session() as sess:
-    for image_path in TEST_IMAGE_PATHS:
+    with tf.compat.v1.Session() as sess:
+        for image_path in TEST_IMAGE_PATHS:
+            try:
+                #print("Image Path: %s" % (image_path))
+                print("Processing image #%s, Path: %s" % (image_index, image_path))
 
-      #print("Image Path: %s" % (image_path))
-      print("Processing image #%s, Path: %s" % (image_index, image_path))
+                # TODO: split this out into functions
+                process_start_time = time.time()
 
-      # TODO: split this out into functions
-      process_start_time = time.time()
+                image = Image.open(image_path)
 
-      try:
-          image = Image.open(image_path)
-      except:
-          print("Failed to open image.  Image Path: %s" % (image_path))
-          total_process_time = calculate_image_processing_time(
-              process_start_time, total_process_time, image_index, test_image_len)
-          image_index += 1
-          continue
+                # the array based representation of the image will be used later in order to prepare the
+                # result image with boxes and labels on it.
+                image_np = load_image_into_numpy_array(image)
 
-      # the array based representation of the image will be used later in order to prepare the
-      # result image with boxes and labels on it.
-      image_np = load_image_into_numpy_array(image)
-      # Expand dimensions since the model expects images to have shape: [1, None, None, 3]
-      image_np_expanded = np.expand_dims(image_np, axis=0)
-      # Actual detection.
-      output_dict = run_inference_for_single_image(image_np_expanded, graph, sess)
-      #print("Output Dict: %s" % (output_dict))
+                # Expand dimensions since the model expects images to have shape: [1, None, None, 3]
+                image_np_expanded = np.expand_dims(image_np, axis=0)
+                # Actual detection.
+                output_dict = run_inference_for_single_image(
+                    image_np_expanded, graph, sess)
+                #print("Output Dict: %s" % (output_dict))
 
-      has_detected_obj = any(
-          i >= threshold for i in output_dict['detection_scores'])
-      #print("Objest Detected: %s" % (has_detected_obj))
-      if has_detected_obj:
-          # Select all class ids with a score >= threshold
-          selectors = [x >= threshold for x in output_dict['detection_scores']]
-          detected_class_ids = list(itertools.compress(
-              output_dict['detection_classes'], selectors))
-          #print("Class Ids Found: %s" % (detected_class_ids))
+                has_detected_obj = any(
+                    i >= threshold for i in output_dict['detection_scores'])
+                #print("Objest Detected: %s" % (has_detected_obj))
+                if has_detected_obj:
+                    # Select all class ids with a score >= threshold
+                    selectors = [
+                        x >= threshold for x in output_dict['detection_scores']]
+                    detected_class_ids = list(itertools.compress(
+                        output_dict['detection_classes'], selectors))
+                    #print("Class Ids Found: %s" % (detected_class_ids))
 
-          # Labes for mscoco_label_map
-          #filter_by_class_id = False
-          filter_by_class_id = True
+                    # Labes for mscoco_label_map
+                    #filter_by_class_id = False
+                    filter_by_class_id = True
 
-          # coco filter list
-          #label_filter_list = [3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 25, 37, 38, 42, 62, 64, 72]
-          # oid v4 filter list
-          label_filter_list = [103, 218, 241, 318, 334, 391, 400, 404, 409, 462, 485, 535, 571]
+                    # coco filter list
+                    #label_filter_list = [3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 25, 37, 38, 42, 62, 64, 72]
+                    # oid v4 filter list
+                    label_filter_list = [50, 89, 99, 103, 160, 218, 241, 318, 334, 366,
+                                        391, 393, 400, 404, 409, 444, 456, 462, 485, 535, 571]
 
-          if filter_by_class_id and set(detected_class_ids).issubset(label_filter_list):
-              print("All detected classes are ignored.  Image will not be visualized.")
-          else:
-              detected_class_names = [category_index[i]['name']
-                                      for i in detected_class_ids]
-              #print("Class Names: %s" % (detected_class_names))
-              #print("Output Dict: %s" % (output_dict))
-              #print("Category Index: %s" % (category_index))
+                    if filter_by_class_id and set(detected_class_ids).issubset(label_filter_list):
+                        print(
+                            "All detected classes are ignored.  Image will not be visualized.")
+                    else:
+                        detected_class_names = [category_index[i]['name']
+                                                for i in detected_class_ids]
+                        #print("Class Names: %s" % (detected_class_names))
+                        #print("Output Dict: %s" % (output_dict))
+                        #print("Category Index: %s" % (category_index))
 
-              #print("Objest Was Detected.  Image Path: %s, Class Names: %s" % (image_path, detected_class_names))
-              objects_detected_dict[image_path] = detected_class_names
+                        #print("Objest Was Detected.  Image Path: %s, Class Names: %s" % (image_path, detected_class_names))
+                        objects_detected_dict[image_path] = detected_class_names
 
-              # Visualization of the results of a detection.
-              vis_util.visualize_boxes_and_labels_on_image_array(
-                  image_np,
-                  output_dict['detection_boxes'],
-                  output_dict['detection_classes'],
-                  output_dict['detection_scores'],
-                  category_index,
-                  instance_masks=output_dict.get('detection_masks'),
-                  use_normalized_coordinates=True,
-                  line_thickness=1)
-              # line_thickness=2)
-              # thickness of 8 is too thick for distant objects.
-              # line_thickness=8)
+                        # Visualization of the results of a detection.
+                        vis_util.visualize_boxes_and_labels_on_image_array(
+                            image_np,
+                            output_dict['detection_boxes'],
+                            output_dict['detection_classes'],
+                            output_dict['detection_scores'],
+                            category_index,
+                            instance_masks=output_dict.get('detection_masks'),
+                            use_normalized_coordinates=True,
+                            line_thickness=1)
+                        # line_thickness=2)
+                        # thickness of 8 is too thick for distant objects.
+                        # line_thickness=8)
 
-              # Used to visualize the image in matplotlib.
-              # plt.figure(figsize=IMAGE_SIZE)
-              # plt.imshow(image_np)
+                        # Used to visualize the image in matplotlib.
+                        # plt.figure(figsize=IMAGE_SIZE)
+                        # plt.imshow(image_np)
 
-              output_image_to_file(image_path, image_np)
+                        output_image_to_file(image_path, image_np)
 
-      total_process_time = calculate_image_processing_time(
-          process_start_time, total_process_time, image_index, test_image_len)
-      image_index += 1
+                total_process_time = calculate_image_processing_time(
+                    process_start_time, total_process_time, image_index, test_image_len)
+                image_index += 1
+            except:
+                print("Failed to process image.  Image Path: %s" % (image_path))
+                print("Unexpected error:", sys.exc_info()[0])
+                traceback.print_exc()
+                total_process_time = calculate_image_processing_time(
+                    process_start_time, total_process_time, image_index, test_image_len)
+                image_index += 1
+                continue
 
 # Calculate the total processing time.
 end_time = time.time()
@@ -311,4 +317,9 @@ total_processing_time = (end_time - start_time)
 print("Total Processing Time: %s minutes, %s hours" %
       ((total_processing_time / 60), ((total_processing_time / 60) / 60)))
 
-print("Objects Detected:\n%s" % (objects_detected_dict))
+PATH_TO_OBJECT_RESULT_FILE = ntpath.join(PATH_TO_TEST_IMAGES_OUT_DIR, 'detection_results.json')
+object_result_files = open(PATH_TO_OBJECT_RESULT_FILE, "w")
+object_result_files.writelines(objects_detected_dict)
+object_result_files.close()
+print("Detected Files Writen To File: %s" % (PATH_TO_OBJECT_RESULT_FILE))
+#print("Objects Detected:\n%s" % (objects_detected_dict))
