@@ -5,13 +5,15 @@ from object_detection.utils import ops as utils_ops
 import numpy as np
 import os
 import six.moves.urllib as urllib
-import sys, traceback
+import sys
+import traceback
 import tarfile
 import tensorflow as tf
 import zipfile
 import itertools
 import time
 import ntpath
+import json
 
 from distutils.version import StrictVersion
 from collections import defaultdict
@@ -49,7 +51,7 @@ print("TensorFlow Version: " + tf.__version__)
 #MODEL_NAME = 'faster_rcnn_inception_resnet_v2_atrous_coco_2018_01_28'
 
 # about 26 seconds an image.  Way more detection like tree's and women.
-MODEL_NAME = 'faster_rcnn_inception_resnet_v2_atrous_oid_v4_2018_12_12'
+#MODEL_NAME = 'faster_rcnn_inception_resnet_v2_atrous_oid_v4_2018_12_12'
 
 # TODO: try face detection... facessd_mobilenet_v2_quantized_320x320_open_image_v4
 # Initial Test Resulted in error
@@ -59,7 +61,7 @@ MODEL_NAME = 'faster_rcnn_inception_resnet_v2_atrous_oid_v4_2018_12_12'
 #MODEL_NAME = 'ssd_mobilenet_v2_oid_v4_2018_12_12'
 
 # Best coco mAP.  20-30 seconds per image.  So far the best but very slow.
-#MODEL_NAME = 'faster_rcnn_nas_coco_2018_01_28'
+MODEL_NAME = 'faster_rcnn_nas_coco_2018_01_28'
 
 MODEL_FILE = MODEL_NAME + '.tar.gz'
 DOWNLOAD_BASE = 'http://download.tensorflow.org/models/object_detection/'
@@ -69,14 +71,14 @@ PATH_TO_FROZEN_GRAPH = MODEL_NAME + '/frozen_inference_graph.pb'
 
 # List of the strings that is used to add correct label for each box.
 # COOC Labels
-#PATH_TO_LABELS = os.path.join('data', 'mscoco_label_map.pbtxt')
+PATH_TO_LABELS = os.path.join('data', 'mscoco_label_map.pbtxt')
 
 # OIC V4 Labels
-PATH_TO_LABELS = os.path.join('data', 'oid_v4_label_map.pbtxt')
+#PATH_TO_LABELS = os.path.join('data', 'oid_v4_label_map.pbtxt')
 
 # Download Model
-opener = urllib.request.URLopener()
-opener.retrieve(DOWNLOAD_BASE + MODEL_FILE, MODEL_FILE)
+urllib.request.urlretrieve(DOWNLOAD_BASE + MODEL_FILE, MODEL_FILE)
+
 tar_file = tarfile.open(MODEL_FILE)
 for file in tar_file.getmembers():
     file_name = os.path.basename(file.name)
@@ -113,7 +115,7 @@ def load_image_into_numpy_array(image):
 #PATH_TO_TEST_IMAGES_DIR = ntpath.join('test_images','FrontCam', 'Missed')
 PATH_TO_TEST_IMAGES_DIR = ntpath.join('test_images', 'FrontCam')
 TEST_IMAGE_PATHS = [os.path.join(
-    PATH_TO_TEST_IMAGES_DIR, 'image{}.jpg'.format(i)) for i in range(18523, 23969)]
+    PATH_TO_TEST_IMAGES_DIR, 'image{}.jpg'.format(i)) for i in range(1, 100)]
 #PATH_TO_TEST_IMAGES_OUT_DIR = ntpath.join('test_images_out', 'FrontCam', 'Missed')
 PATH_TO_TEST_IMAGES_OUT_DIR = ntpath.join('test_images_out', 'FrontCam')
 
@@ -203,6 +205,7 @@ def calculate_image_processing_time(process_start_time, total_process_time, imag
         (remaining_processing_time / 60), ((remaining_processing_time / 60) / 60)))
     return total_process_time
 
+
 # Jupyter...
 # This is needed to display the images.
 # %matplotlib inline
@@ -226,7 +229,8 @@ with detection_graph.as_default() as graph:
         for image_path in TEST_IMAGE_PATHS:
             try:
                 #print("Image Path: %s" % (image_path))
-                print("Processing image #%s, Path: %s" % (image_index, image_path))
+                print("Processing image #%s, Path: %s" %
+                      (image_index, image_path))
 
                 # TODO: split this out into functions
                 process_start_time = time.time()
@@ -260,10 +264,11 @@ with detection_graph.as_default() as graph:
                     filter_by_class_id = True
 
                     # coco filter list
-                    #label_filter_list = [3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 25, 37, 38, 42, 62, 64, 72]
+                    label_filter_list = [
+                        3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 25, 35, 37, 38, 42, 62, 64, 72]
                     # oid v4 filter list
-                    label_filter_list = [50, 89, 99, 103, 160, 218, 241, 318, 334, 366,
-                                        391, 393, 400, 404, 409, 444, 456, 462, 485, 535, 571]
+                    # label_filter_list = [50, 89, 99, 103, 160, 218, 241, 318, 334, 366,
+                    #                    391, 393, 400, 404, 409, 444, 456, 462, 485, 535, 571]
 
                     if filter_by_class_id and set(detected_class_ids).issubset(label_filter_list):
                         print(
@@ -317,9 +322,10 @@ total_processing_time = (end_time - start_time)
 print("Total Processing Time: %s minutes, %s hours" %
       ((total_processing_time / 60), ((total_processing_time / 60) / 60)))
 
-PATH_TO_OBJECT_RESULT_FILE = ntpath.join(PATH_TO_TEST_IMAGES_OUT_DIR, 'detection_results.json')
+PATH_TO_OBJECT_RESULT_FILE = ntpath.join(
+    PATH_TO_TEST_IMAGES_OUT_DIR, 'detection_results.json')
 object_result_files = open(PATH_TO_OBJECT_RESULT_FILE, "w")
-object_result_files.writelines(objects_detected_dict)
+object_result_files.writelines(json.dumps({'obj_dict': objects_detected_dict}))
 object_result_files.close()
 print("Detected Files Writen To File: %s" % (PATH_TO_OBJECT_RESULT_FILE))
 #print("Objects Detected:\n%s" % (objects_detected_dict))

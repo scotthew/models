@@ -139,6 +139,14 @@ Follow Instruction to [Compile tensorflow for RTX](https://www.pytorials.com/how
   - pip3 install keras_applications==1.0.6 --no-deps
   - pip3 install keras_preprocessing==1.0.5 --no-deps
 
+## Profiling
+
+```bash
+python -m cProfile -o scotthew.prof scotthew_object_detection.py
+pip install snakeviz
+snakeviz scotthew.prof
+```
+
 ## TODOs
 
 - ~~Add tensor flow image processing counter and estimate time to scotthew_detection_tutorial.ipynb.~~

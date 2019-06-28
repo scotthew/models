@@ -101,3 +101,4 @@ tutorials/embedding/questions-words.txt
 samples/outreach/blogs/segmentation_blogpost/carvana-image-masking-challenge/
 /research/object_detection/test_images
 /research/object_detection/test_images_out
+/research/object_detection/*.prof
